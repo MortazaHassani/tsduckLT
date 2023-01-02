@@ -79,5 +79,7 @@ make test
 ### ---
 
 After each edit run following on main tsduckLT folder.
+sudo make
+source scripts/setenv.sh
 
 
