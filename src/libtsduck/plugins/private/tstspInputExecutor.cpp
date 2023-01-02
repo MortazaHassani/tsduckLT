@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2023, Thierry Lelegard
+// Copyright (c) 2005-2022, Thierry Lelegard
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 
 #include "tstspInputExecutor.h"
 #include "tsTime.h"
-
+#include <fstream>
 // Minimum number of PID's and PCR/DTS to analyze before getting a valid bitrate.
 #define MIN_ANALYZE_PID   1
 #define MIN_ANALYZE_PCR  32
@@ -502,11 +502,17 @@ void ts::tsp::InputExecutor::main()
             // Call shared library to get input bitrate
             getBitrate(bitrate, br_confidence);
 
+            //extern ts::BitRate global_bitrate;
             if (bitrate > 0) {
                 // Keep this bitrate
-                _tsp_bitrate = bitrate;
+                _tsp_bitrate = bitrate; 
                 _tsp_bitrate_confidence = br_confidence;
-                debug(u"input: got bitrate %'d b/s", {bitrate});
+                debug(u"BitRate i've 12_29  Updated %'d b/s", {bitrate});
+                //global_bitrate = bitrate;_
+                std::ofstream outFile;
+                outFile.open("my_file.txt");
+                outFile << _tsp_bitrate;
+                outFile.close();
             }
         }
 
@@ -520,4 +526,5 @@ void ts::tsp::InputExecutor::main()
     _input->stop();
 
     debug(u"input thread %s after %'d packets", {aborted ? u"aborted" : u"terminated", totalPacketsInThread()});
+    // return _tsp_bitrate;
 }
