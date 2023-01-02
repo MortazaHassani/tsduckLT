@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- A target to build the XML definitions for all tables and descriptors -->
+
+  <PropertyGroup>
+    <DtvRoot>$(TSDuckRootDir)src\libtsduck\dtv\</DtvRoot>
+    <TablesSkeletonXml>$(TSDuckRootDir)src\libtsduck\config\tsduck.tables.skeleton.xml</TablesSkeletonXml>
+    <TablesModelXml>$(OutDir)tsduck.tables.model.xml</TablesModelXml>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <DtvXmlFiles Include="$(DtvRoot)tables\*.xml;$(DtvRoot)descriptors\*.xml"/>
+  </ItemGroup>
+
+  <Choose>
+    <!-- Find a tsxml.exe somewhere -->
+    <!-- During a normal build, it is always in $(OutDir) -->
+    <When Condition="'$(ProjectName)' == 'tsxml' OR Exists('$(OutDir)tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(OutDir)tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(BinRootDir)Release-x64\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(BinRootDir)Release-x64\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(BinRootDir)Release-Win32\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(BinRootDir)Release-Win32\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(BinRootDir)Debug-x64\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(BinRootDir)Debug-x64\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(BinRootDir)Debug-Win32\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(BinRootDir)Debug-Win32\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="'$(TSDUCK)' != '' AND Exists('$(TSDUCK)\bin\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(TSDUCK)\bin\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);@(DtvXmlFiles)" Outputs="$(TablesModelXml)">
+	<Message Text="Building $(TablesModelXml)" Importance="high"/>
+    <PropertyGroup>
+      <!-- Reduce the length of the list of files, will use the removed prefix as working directory -->
+      <!-- Without this, MSBuild fails with "command too long" -->
+      <DtvXmlFilesSpace>@(DtvXmlFiles,' ')</DtvXmlFilesSpace>
+      <DtvXmlFilesBase>$(DtvXmlFilesSpace.Replace('$(DtvRoot)',''))</DtvXmlFilesBase>
+    </PropertyGroup>
+    <Error Condition="'$(TsXmlExe)' == ''" Text="No tsxml.exe found, rebuild the project first"/>
+    <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
+    <Exec WorkingDirectory="$(DtvRoot)"
+          Command='"$(TsXmlExe)" --merge "$(TablesSkeletonXml)" $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o "$(TablesModelXml)"'/>
+  </Target>
+
+</Project>

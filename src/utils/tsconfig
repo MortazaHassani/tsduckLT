@@ -1,0 +1,242 @@
+#!/usr/bin/env bash
+#-----------------------------------------------------------------------------
+#
+#  TSDuck - The MPEG Transport Stream Toolkit
+#  Copyright (c) 2005-2023, Thierry Lelegard
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are met:
+#
+#  1. Redistributions of source code must retain the above copyright notice,
+#     this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+#  THE POSSIBILITY OF SUCH DAMAGE.
+#
+#-----------------------------------------------------------------------------
+#
+#  This script is used with the TSDuck development environment.
+#  It displays various options to build applications with the TSDuck library.
+#
+#-----------------------------------------------------------------------------
+
+TSCONFIG=${BASH_SOURCE[0]}
+SCRIPT=$(basename $TSCONFIG)
+SYSTEM=$(uname -s)
+info()  { echo >&2 "$SCRIPT: $*"; }
+error() { echo >&2 "$SCRIPT: $*"; exit 1; }
+usage() { error "invalid option $*, try --help"; }
+
+# Display help text
+cmd_help() {
+    cat >&2 <<EOF
+
+Syntax: $SCRIPT [options]
+
+  --cflags      pre-processor and compiler flags
+  --libs        library linking flags
+  --static-libs static library linking flags
+
+  --so          shared object files extension (".so", ".dylib", ".dll")
+  --prefix      installation prefix
+  --bin         directory for TSDuck executables
+  --lib         directory for TSDuck dynamic libraries (except plugins)
+  --plugin      directory for TSDuck plugins
+  --config      directory for TSDuck configuration files
+  --include     include directory
+  --java        jar file for TSDuck Java bindings, to be added in CLASSPATH
+  --python      directory for TSDuck Python bindings, to be added in PYTHONPATH
+
+  --help        display this help and exit
+  --version     output version information
+  --vernum      output the version information as a number
+
+EOF
+    if [[ $SYSTEM == Linux ]]; then
+        cat >&2 <<EOF
+  --install-dvb-firmware   download and install additional DVB firmware
+
+EOF
+    fi
+    exit
+}
+
+# Process individual commands
+cmd_bin() {
+    (cd $(dirname "$TSCONFIG" 2>/dev/null); pwd)
+}
+
+cmd_prefix() {
+    (cd $(dirname "$TSCONFIG" 2>/dev/null); cd ..; pwd)
+}
+
+cmd_plugin() {
+    echo "$(cmd_lib)/tsduck"
+}
+
+cmd_config() {
+    echo "$(cmd_prefix)/share/tsduck"
+}
+
+cmd_include() {
+    echo "$(cmd_prefix)/include/tsduck"
+}
+
+cmd_java() {
+    local jar="$(cmd_prefix)/share/tsduck/java/tsduck.jar"
+    [[ -e "$jar" ]] && echo "$jar"
+}
+
+cmd_python() {
+    echo "$(cmd_prefix)/share/tsduck/python"
+}
+
+cmd_lib() {
+    dirname $(ls $(cmd_prefix)/lib*/libtsduck$(cmd_so) 2>/dev/null | head -1) 2>/dev/null
+}
+
+cmd_cflags() {
+    local pcsc=
+    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && pcsc="-I/usr/include/PCSC"
+    echo "-I$(cmd_include) $pcsc --std=c++11"
+}
+
+cmd_so() {
+    if [[ $SYSTEM == Darwin ]]; then
+        echo ".dylib"
+    elif [[ $SYSTEM == CYGWIN* || $SYSTEM == MINGW* ]]; then
+        echo ".dll"
+    else
+        echo ".so"
+    fi
+}
+
+libs_common() {
+    local pcsc=
+    local rt=
+    [[ $SYSTEM == Darwin ]] && pcsc="-framework PCSC"
+    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && pcsc="-lpcsclite"
+    [[ $SYSTEM == Linux ]] && rt="-lrt"
+    echo "$pcsc -lpthread $rt -ldl -lm -lstdc++"
+}
+
+cmd_libs() {
+    local lib=$(cmd_lib)
+    local usrlib=/usr/lib
+    local lopt=
+    [[ -n $(ls /usr/lib64/libc.so* 2>/dev/null) ]] && usrlib=/usr/lib64
+    [[ $lib != $usrlib ]] && lopt="-L$lib"
+    echo "$lopt -ltsduck $(libs_common)"
+}
+
+cmd_staticlibs() {
+    local srt=$(ls /usr/lib/libsrt.a /usr/local/lib/libsrt.a /opt/homebrew/lib/libsrt.a 2>/dev/null | head -1)
+    local rist=$(ls /usr/lib/librist.a /usr/local/lib/librist.a /opt/homebrew/lib/librist.a 2>/dev/null | head -1)
+    local other=
+    [[ $SYSTEM == Linux ]] && other="$other -latomic"
+    [[ $SYSTEM == FreeBSD ]] && other="$other -lprocstat"
+    echo "$(cmd_lib)/libtsduck.a $srt $rist $(curl-config --static-libs 2>/dev/null) -ledit $other $(libs_common)"
+}
+
+version_major() {
+    sed -e '/#define *TS_VERSION_MAJOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
+}
+
+version_minor() {
+    sed -e '/#define *TS_VERSION_MINOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
+}
+
+version_commit() {
+    sed -e '/#define *TS_COMMIT/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
+}
+
+cmd_version() {
+    echo "$(version_major).$(version_minor).$(version_commit)"
+}
+
+cmd_vernum() {
+    echo $(( ($(version_major) * 10000000) + ($(version_minor) * 100000) + $(version_commit) ))
+}
+
+cmd_install_firmware() {
+    [[ $SYSTEM == Linux ]] || error "DVB firmware is available on Linux only"
+    [[ $(id -u) -eq 0 ]] || error "must be root to install firmware"
+    local fwdir=/lib/firmware
+    [[ -d "$fwdir" ]] || error "directory $fwdir does not exist, maybe not the right system"
+
+    # linux-firmware package: standard package (depends on distro).
+    if [[ -n $(which apt 2>/dev/null) ]]; then
+        if ! (apt -qq list linux-firmware 2>/dev/null | grep -q installed); then
+            info "installing package linux-firmware ..."
+            apt install -y linux-firmware
+        fi
+    fi
+    local dnf=$(which dnf 2>/dev/null)
+    [[ -z "$dnf" ]] && dnf=$(which yum 2>/dev/null)
+    if [[ -n "$dnf" ]]; then
+        if ! rpm -q linux-firmware &>/dev/null; then
+            info "installing package linux-firmware ..."
+            "$dnf" install -y linux-firmware
+        fi
+    fi
+
+    # OpenELEC project: The firmware files are directly downloaded from the GitHut repository.
+    # Exclude the first two levels of directory (down to "firmware" directory).
+    info "downloading firmware from OpenELEC project ..."
+    curl -sL https://github.com/OpenELEC/dvb-firmware/tarball/master | \
+        tar -C "$fwdir" -xzpvf - --strip-components=2 --wildcards 'OpenELEC-dvb-firmware-*/firmware'
+}
+
+if [ $# -eq 0 ]; then
+    # No option, display everything.
+    echo "version: $(cmd_version)"
+    echo "prefix: $(cmd_prefix)"
+    echo "so: $(cmd_so)"
+    echo "bin: $(cmd_bin)"
+    echo "lib: $(cmd_lib)"
+    echo "plugin: $(cmd_plugin)"
+    echo "config: $(cmd_config)"
+    echo "include: $(cmd_include)"
+    echo "cflags: $(cmd_cflags)"
+    echo "libs: $(cmd_libs)"
+    echo "static-libs: $(cmd_staticlibs)"
+    echo "java: $(cmd_java)"
+    echo "python: $(cmd_python)"
+else
+    # Display options one by one.
+    for arg in "$@"; do
+        case "$arg" in
+            --bin) cmd_bin ;;
+            --cflags) cmd_cflags ;;
+            --config) cmd_config ;;
+            --help) cmd_help ;;
+            --include) cmd_include ;;
+            --java) cmd_java ;;
+            --lib) cmd_lib ;;
+            --libs) cmd_libs ;;
+            --plugin) cmd_plugin ;;
+            --prefix) cmd_prefix ;;
+            --python) cmd_python ;;
+            --so) cmd_so ;;
+            --static-libs) cmd_staticlibs ;;
+            --version) cmd_version ;;
+            --vernum) cmd_vernum ;;
+            --install-dvb*) cmd_install_firmware ;;
+            *) usage "$arg" ;;
+        esac
+        shift
+    done
+fi

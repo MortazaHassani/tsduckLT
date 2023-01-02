@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props"/>
+  </ImportGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsducklib</RootNamespace>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-lib.props" />
+    <Import Project="msvc-use-dtapi.props" />
+    <Import Project="msvc-use-vatek.props"/>
+    <Import Project="msvc-disable-srt.props" />
+    <Import Project="msvc-disable-rist.props"/>
+    <Import Project="msvc-use-java.props"/>
+    <Import Project="msvc-build-config-files.props"/>
+    <Import Project="msvc-build-dtv-names.props"/>
+    <Import Project="msvc-build-dektec-names.props"/>
+    <Import Project="msvc-build-tsduck-jar.props"/>
+    <Import Project="msvc-build-tsduck-header.props"/>
+  </ImportGroup>
+
+  <ItemGroup>
+    <ClInclude Include="@(LibPublicHeaders);@(LibPrivateHeaders)"/>
+    <ClCompile Include="@(LibSources)"/>
+  </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(TSDuckLibDirs);$(TSDuckLibDirsInternal);$(BinRootDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-end.props"/>
+  </ImportGroup>
+
+</Project>

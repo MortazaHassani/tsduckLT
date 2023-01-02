@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- A target to copy .xml and .names into destination -->
+
+  <PropertyGroup>
+    <LibConfigDir>$(TSDuckRootDir)src\libtsduck\config\</LibConfigDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <LibConfigFiles Include="$(LibConfigDir)*.xml;$(LibConfigDir)*.names" Exclude="$(LibConfigDir)*.skeleton.*"/>
+  </ItemGroup>
+
+  <Target Name="BuildConfigFiles" Inputs="@(LibConfigFiles)" Outputs="@(LibConfigFiles->'$(OutDir)%(Filename)%(Extension)')">
+    <Message Text="Copying .xml and .names files in $(OutDir)" Importance="high"/>
+    <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
+    <Copy SourceFiles="@(LibConfigFiles)" DestinationFolder="$(OutDir)"/>
+  </Target>
+
+</Project>

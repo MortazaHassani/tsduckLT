@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props" />
+  </ImportGroup>
+
+  <ItemGroup>
+    <Plugins   Include="$(TSDuckRootDir)src\tsplugins\tsplugin_*.cpp"/>
+    <ClCompile Include="..\..\src\tstools\tsp.cpp" />
+    <ClCompile Include="@(Plugins)"/>
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0305170C-F14D-4812-8B14-1468D6607794}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsp_static</RootNamespace>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-exe.props" />
+    <Import Project="msvc-use-tsducklib-all.props" />
+    <Import Project="msvc-use-librist.props" />
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+
+</Project>

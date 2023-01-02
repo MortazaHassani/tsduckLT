@@ -1,0 +1,28 @@
+[mpeg2.frame_rate]
+# In MPEG-2 video sequence.
+Bits = 8
+0 = forbidden
+1 = 23.976 fps (24000/1001)
+2 = 24 fps
+3 = 25 fps
+4 = 29.97 fps (30000/1001)
+5 = 30 fps
+6 = 50 fps
+7 = 59.94 fps (60000/1001)
+8 = 60 fps
+
+[mpeg2.aspect_ratio]
+# In MPEG-1/2 video sequence header.
+Bits = 8
+1 = 1:1
+2 = 4:3
+3 = 16:9
+4 = 2.21:1
+
+[mpeg2.chroma_format]
+# In MPEG-1/2 video sequence header.
+Bits = 8
+0 = monochrome
+1 = 4:2:0
+2 = 4:2:2
+3 = 4:4:4

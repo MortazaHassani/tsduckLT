@@ -1,0 +1,101 @@
+/**
+
+@defgroup core Core classes
+Generic core classes.
+
+  @defgroup cpp C++ language
+  @ingroup core
+  C++ language features and design patterns.
+
+  @defgroup system Operating system
+  @ingroup core
+  Portable operating system layer.
+
+  @defgroup thread Multi-threading
+  @ingroup core
+  Multi-threading and synchronization features.
+
+  @defgroup net Networking
+  @ingroup core
+  Networking features.
+
+  @defgroup log Message logging
+  @ingroup core
+  Unified message logging.
+
+  @defgroup unix Unix
+  @ingroup core
+  Unix specific features.
+
+  @defgroup windows Windows
+  @ingroup core
+  Windows specific features.
+
+@defgroup data Data formats
+Handling various data formats.
+
+  @defgroup tlv TLV
+  @ingroup data
+  Representation of Tag / Length / Value messages.
+
+  @defgroup xml XML
+  @ingroup data
+  Representation of XML documents.
+
+  @defgroup json JSON
+  @ingroup data
+  Representation of JSON documents.
+
+@defgroup crypto Cryptography
+Cryptographic algorithms.
+
+@defgroup dtv Digital TV
+Digital television features.
+
+  @defgroup mpeg MPEG-DVB core
+  @ingroup dtv
+  MPEG-DVB core features.
+
+  @defgroup table MPEG-DVB tables
+  @ingroup dtv
+  Tables used in MPEG-DVB systems.
+
+  @defgroup descriptor MPEG-DVB descriptors
+  @ingroup dtv
+  Most common descriptors used in MPEG-DVB systems.
+
+  @defgroup hls HTTP Live Streaming (HLS)
+  @ingroup dtv
+  Classes for HTTP Live Streaming (HLS)
+
+  @defgroup hardware Hardware support
+  @ingroup dtv
+  Specific hardware support (Dektec, tuners)
+
+@defgroup appdev Application
+Application development.
+
+  @defgroup app Applications
+  @ingroup appdev
+  Application management tools.
+
+  @defgroup cmd Command line
+  @ingroup appdev
+  Command line applications.
+
+  @defgroup plugin Plugins
+  @ingroup appdev
+  TSDuck plugin development.
+
+@defgroup otherlang Other languages
+Application development not using C++.
+
+  @defgroup java Java bindings
+  @ingroup otherlang
+  Using TSDuck from Java applications.
+
+  @defgroup python Python bindings
+  @ingroup otherlang
+  Using TSDuck from Python applications.
+
+*/
