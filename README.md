@@ -42,7 +42,7 @@ cd tsduck
 
 sudo apt install git
 
-git clone https://github.com/MortazaHassani/tsduck/tsduckLT.git
+git clone https://github.com/MortazaHassani/tsduckLT.git
 
 cd tsduck
 
